@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Message secret</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #050816; /* fond sombre uni pour laisser les étoiles visibles */
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wrapper {
+      text-align: center;
+      padding: 30px 20px;
+      max-width: 700px;
+      position: relative;
+      z-index: 1; /* au-dessus des étoiles */
+    }
+
+    .card {
+      background: radial-gradient(circle at top, #ffb6c1 0, #0b1020 45%, #050816 100%);
+      border-radius: 18px;
+      padding: 28px 22px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(10px);
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+
+    .sub {
+      font-size: 14px;
+      opacity: 0.85;
+      margin-bottom: 20px;
+    }
+
+    .countdown {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .time-box {
+      min-width: 70px;
+      padding: 10px 8px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .time-value {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .time-label {
+      font-size: 11px;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .lock {
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    #lockedText {
+      font-size: 15px;
+      line-height: 1.5;
+      opacity: 0.9;
+      margin-bottom: 6px;
+    }
+
+    #unlockDate {
+      font-weight: 600;
+    }
+
+    #message {
+      display: none;
+      text-align: left;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .signature {
+      margin-top: 18px;
+      font-style: italic;
+      text-align: right;
+      opacity: 0.9;
+    }
+
+    @media (min-width: 768px) {
+      h1 {
+        font-size: 26px;
+      }
+      .card {
+        padding: 34px 30px;
+      }
+    }
+
+    /* 🌌 EFFET ÉTOILÉ ANIMÉ EN FOND */
+    .stars,
+    .stars2,
+    .stars3 {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .stars {
+      background: transparent url("https://i.imgur.com/1T6KYIc.png") repeat;
+      animation: moveStars 80s linear infinite;
+      opacity: 0.7;
+    }
+
+    .stars2 {
+      background: transparent url("https://i.imgur.com/1T6KYIc.png") repeat;
+      animation: moveStars 120s linear infinite reverse;
+      opacity: 0.4;
+      transform: scale(1.5);
+    }
+
+    .stars3 {
+      background: transparent url("https://i.imgur.com/1T6KYIc.png") repeat;
+      animation: moveStars 200s linear infinite;
+      opacity: 0.25;
+      transform: scale(2);
+    }
+
+    @keyframes moveStars {
+      from {
+        background-position: 0 0;
+      }
+      to {
+        background-position: -2000px 2000px;
+      }
+    }
+
+    /* ✨ Effet doux sur les paragraphes */
+    .fade-paragraph {
+      opacity: 0;
+      transform: translateY(8px);
+      animation: fadeInSoft 1.4s ease-out forwards;
+    }
+
+    @keyframes fadeInSoft {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fond étoilé -->
+  <div class="stars"></div>
+  <div class="stars2"></div>
+  <div class="stars3"></div>
+
+  <div class="wrapper">
+    <!-- CARTE VERROUILLÉE AVANT L’HEURE -->
+    <div class="card" id="lockedCard">
+      <div class="lock">🔒</div>
+      <h1>Message secret</h1>
+      <p class="sub">Ce message s’ouvrira automatiquement à la bonne date…</p>
+
+      <h2 style="margin-bottom: 20px; font-size: 20px; opacity: .9;">
+        Il reste :
+      </h2>
+
+      <div class="countdown">
+        <div class="time-box">
+          <div class="time-value" id="days">0</div>
+          <div class="time-label">Jours</div>
+        </div>
+        <div class="time-box">
+          <div class="time-value" id="hours">0</div>
+          <div class="time-label">Heures</div>
+        </div>
+        <div class="time-box">
+          <div class="time-value" id="minutes">0</div>
+          <div class="time-label">Minutes</div>
+        </div>
+        <div class="time-box">
+          <div class="time-value" id="seconds">0</div>
+          <div class="time-label">Secondes</div>
+        </div>
+      </div>
+
+      <p id="lockedText">
+        Ce message sera accessible le :
+        <span id="unlockDate">25 décembre 2025 à 22h00</span>.
+      </p>
+      <p class="sub">En attendant… tu peux juste savoir que ce qui t’attend ici vient du cœur. ❤️</p>
+    </div>
+
+    <!-- MESSAGE RÉVÉLÉ APRÈS L’HEURE -->
+    <div class="card" id="message">
+      <p class="fade-paragraph" style="animation-delay:0.2s">
+        Respire un grand coup, Chérie… J’aimerais te parler de quelque chose d’important.
+        Ça ne me dérange pas d’en discuter à l’oral, mais puisque tu préfères que ça reste discret, c’est mon moi du passé qui t’envoie ce message.
+      </p>
+<br/>
+      <p class="fade-paragraph" style="animation-delay:0.9s">
+        Tu m’as demandé si, un jour, j’aimerais me marier avec toi.
+        Et aujourd’hui, je veux vraiment te répondre correctement.
+      </p>
+      <br/>
+      <p class="fade-paragraph" style="animation-delay:1.6s">
+        Je continue à penser que tu serais plus heureuse avec quelqu’un d’autre. Je suis souvent mélancolique, grognon, impatient, maladroit, solitaire et casanier. 
+        Je manque de motivation, j’ai du mal à comprendre ou renvoyer les sentiments ou les interactions sociales. 
+        Mais tu es toujours là, et je respecte ton choix.
+      </p>
+      <br/>
+      <p class="fade-paragraph" style="animation-delay:2.3s">
+        Tu es là quand je doute, quand je me perds, quand je me ferme.<br/>
+        Tu es là quand je me renferme dans mon silence, quand je broie du noir, quand je suis à côté de mes émotions.<br/>
+        Tu es là, patiente, douce, attentive. J’aime les moments que l’on partage, j’aime les jours passés avec toi.
+      </p>
+      <br/>
+      <p class="fade-paragraph" style="animation-delay:3.0s">
+        Je rêve de stabilité, pour toi, pour Mattéo, pour moi. Bien que ce n’était pas important jusqu’ici dans ma vie, maintenant que je vous ai à mes côtés, 
+        j’aimerais un travail où je gagne convenablement ma vie, pour nous.
+      </p>
+      <br/>
+      <p class="fade-paragraph" style="animation-delay:3.7s">
+        Alors quand j’aurai remboursé ce que je dois et trouvé cette stabilité, oui.
+      </p>
+      <br/>
+      <p class="fade-paragraph" style="animation-delay:4.4s">
+        Ce n’est pas un oui par automatisme, ni un oui parce que c’est ce que tu veux entendre, mais un OUI profond et réfléchi.
+      </p>
+      <br/>
+      <p class="fade-paragraph" style="animation-delay:5.1s">
+        Oui, je veux te choisir encore et encore.<br/>
+        Oui, j’aimerais me marier avec toi un jour.
+      </p>
+      <div class="signature fade-paragraph" style="animation-delay:5.8s">
+        ♥ De ton moi du passé
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Date de déblocage (heure locale du navigateur, donc 22h heure de Paris pour vous)
+    const unlockDate = new Date("2025-12-25T22:00:00");
+
+    const lockedCard = document.getElementById("lockedCard");
+    const messageCard = document.getElementById("message");
+
+    const daysEl = document.getElementById("days");
+    const hoursEl = document.getElementById("hours");
+    const minutesEl = document.getElementById("minutes");
+    const secondsEl = document.getElementById("seconds");
+
+    function updateCountdown() {
+      const now = new Date();
+      const diff = unlockDate - now;
+
+      if (diff <= 0) {
+        // Temps écoulé -> montrer le message
+        lockedCard.style.display = "none";
+        messageCard.style.display = "block";
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / (3600 * 24));
+      const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      daysEl.textContent = days;
+      hoursEl.textContent = String(hours).padStart(2, "0");
+      minutesEl.textContent = String(minutes).padStart(2, "0");
+      secondsEl.textContent = String(seconds).padStart(2, "0");
+    }
+
+    // Mise à jour immédiate puis toutes les secondes
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+
+</body>
+</html>
